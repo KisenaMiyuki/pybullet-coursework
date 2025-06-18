@@ -1,0 +1,16 @@
+[project]
+name = "pybullet-playground"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "icecream>=2.1.4",
+    "ipykernel>=6.29.5",
+    "noise>=1.2.2",
+    "numpy>=2.2.6",
+    "pybullet>=3.2.7",
+    "pytest>=8.3.5",
+    "pytest-print>=1.1.0",
+    "rich>=14.0.0",
+]
