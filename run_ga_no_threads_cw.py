@@ -7,11 +7,12 @@
 import population
 import simulation_v2
 import genome 
-import cw.creature as crlib
+import creature as crlib
 import numpy as np
 import pybullet as p
 from rich import print
 from rich.traceback import install
+from rich.progress import track
 from rich.panel import Panel
 from rich import inspect
 
@@ -29,7 +30,7 @@ ENVIRONMENT_CONFIG = {
 POPULATION_SIZE = 10
 GENE_COUNT = 3
 CREATURE_SIMULATION_ITERATIONS = 2400
-EVOLVE_GENERATIONS = 5
+EVOLVE_GENERATIONS = 10
 
 
 
@@ -38,7 +39,9 @@ pop = population.Population(pop_size=POPULATION_SIZE, gene_count=GENE_COUNT)
 sim = simulation_v2.Simulation()
 sim.connect()
 
-for generation in range(EVOLVE_GENERATIONS):
+max_fit_on_previous_generation = 0
+
+for generation in track(range(EVOLVE_GENERATIONS)):
     # this is a non-threaded version
     # where we just call run_creature instead
     # of eval_population
@@ -74,21 +77,23 @@ for generation in range(EVOLVE_GENERATIONS):
         new_creatures.append(offspring)
 
     # elitism
-    # TODO: save elite csv only when fitness changes compare to previous iteration's elite
     max_fit = np.max(fits)
-    print(f"Max fit on Generation {generation}: {max_fit}")
+    print(f"Max fit on Generation {generation}: [blue]{max_fit}[/blue]")
     for creature in pop.creatures:
-        if creature.get_distance_travelled() == max_fit:
+        if creature.get_fitness() == max_fit:
             # Find the creature of maximum fit
             new_cr = crlib.Creature(1)
             new_cr.update_dna(creature.dna)
             # Place it in new generation
             new_creatures[0] = new_cr
-            filename = "cw/elite_csvs/elite_" + str(generation) + ".csv"
-            genome.Genome.to_csv(creature.dna, filename)
+            # only save csv when it's a new high
+            if max_fit > max_fit_on_previous_generation:
+                filename = f"elite_csvs/elite_gen{str(generation)}_{round(max_fit, 2)}.csv"
+                genome.Genome.to_csv(creature.dna, filename)
+                max_fit_on_previous_generation = max_fit
             break
 
-    print("Swapping population with new creatures...")
+    print("Swapping population with new creatures ...")
     pop.creatures = new_creatures
 
 sim.disconnect()

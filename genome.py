@@ -1,9 +1,7 @@
 import numpy as np
 import copy 
 import random
-from rich.console import Console
-
-console = Console()
+from rich import print
 
 class Genome():
     @staticmethod 
@@ -207,7 +205,7 @@ class Genome():
         with open(csv_file, 'w') as f:
             f.write(csv_str)
 
-        console.print(f"Saving {csv_file} ...", style="blue")
+        print(f"[green]Saving {csv_file} ...[/green]")
 
     @staticmethod
     def from_csv(filename):
