@@ -15,6 +15,7 @@ from rich.live import Live
 from rich.table import Table
 from rich.console import Group
 from rich.spinner import Spinner
+from rich import print
 
 # rich output setup
 install(show_locals=True)
@@ -63,8 +64,8 @@ def main(csv_file, environment_type):
 
     # generate a random creature
     cr = creature.Creature(gene_count=5)
-    # dna = genome.Genome.from_csv(csv_file)
-    # cr.update_dna(dna)
+    dna = genome.Genome.from_csv(csv_file)
+    cr.update_dna(dna)
 
     # save it to XML
     with open('test.urdf', 'w') as f:
@@ -96,6 +97,7 @@ def main(csv_file, environment_type):
                                 controlMode=mode,
                                 targetVelocity=vel)
                 new_pos, orn = p.getBasePositionAndOrientation(rob1)
+                cr.update_position(new_pos)
                 #print(new_pos)
                 current_pos = new_pos
                 dist_moved = np.linalg.norm(np.asarray(start_pos) - np.asarray(new_pos))
@@ -107,6 +109,7 @@ def main(csv_file, environment_type):
                 break
 
     print("TOTAL DISTANCE MOVED:", dist_moved)
+    print(f"FITNESS: {cr.get_fitness()}")
 
     p.disconnect()
 
