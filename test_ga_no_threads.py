@@ -64,7 +64,6 @@ class TestGA(unittest.TestCase):
                 new_creatures.append(offspring)
 
             # elitism
-            # TODO: save elite csv only when fitness changes compare to previous iteration's elite
             max_fit = np.max(fits)
             for creature in pop.creatures:
                 if creature.get_distance_travelled() == max_fit:

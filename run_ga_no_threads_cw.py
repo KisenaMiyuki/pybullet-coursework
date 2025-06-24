@@ -49,9 +49,10 @@ def main(sim_id, sim_mode):
         # of eval_population
         for creature in pop.creatures:
             sim.run_creature(creature, env_id=1, environment_config=ENVIRONMENT_CONFIG, iterations=CREATURE_SIMULATION_ITERATIONS)
+            print(f"{creature}: {creature.get_fitness()}")
 
         #sim.eval_population(pop, 2400)
-        fits = [cr.get_fitness() for cr in pop.creatures]
+        fits = [cr.get_fitness(verbose=False) for cr in pop.creatures]
         links = [len(cr.get_expanded_links()) for cr in pop.creatures]
 
         print(Panel(f"[green]Generation {generation}[/green]\n"
@@ -82,7 +83,7 @@ def main(sim_id, sim_mode):
         max_fit = np.max(fits)
         print(f"Max fit on Generation {generation}: [blue]{max_fit}[/blue]")
         for creature in pop.creatures:
-            if creature.get_fitness() == max_fit:
+            if creature.get_fitness(verbose=False) == max_fit:
                 # Find the creature of maximum fit
                 new_cr = crlib.Creature(1)
                 new_cr.update_dna(creature.dna)
@@ -102,5 +103,5 @@ def main(sim_id, sim_mode):
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 3, "Usage: python run_ga_no_threads_cw.py sim_id"
+    assert len(sys.argv) == 3, "Usage: python run_ga_no_threads_cw.py sim_id sim_mode"
     main(sys.argv[1], sys.argv[2])

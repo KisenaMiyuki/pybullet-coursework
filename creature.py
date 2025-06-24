@@ -135,11 +135,10 @@ class Creature:
         return dist
 
 
-    def get_fitness(self):
+    def get_fitness(self, verbose=True):
         """
         "The fitness function"
         """
-        # TODO: Implement appropriate fitness
         # Component 1: 1 / horizontal distance to peak
         #                               how to locate peak? (0,0) hardcoded
         # Component 2: average height over time (penalizes single jump or brief ascent, rewards stable climb)
@@ -147,6 +146,12 @@ class Creature:
         # Component 4: energy used
         one_over_closest_distance_to_peak = 1 / self.closest_distance_to_peak  # greater the better
         average_height_over_time = sum(self.height_history) / len(self.height_history)
+        if verbose:
+            print(f"┏━━━━━ Fitness functino called")
+            print(f"┣━ Closest distance to peak: {self.closest_distance_to_peak}")
+            print(f"┣━ Average height over time: {average_height_over_time}")
+            print(f"┣━ Time spent above height threshold: {self.time_spent_above_height_threshold}")
+            print(f"┗━━━━━ Fitness: {one_over_closest_distance_to_peak + average_height_over_time + self.time_spent_above_height_threshold}")
         return one_over_closest_distance_to_peak + average_height_over_time + self.time_spent_above_height_threshold
 
 

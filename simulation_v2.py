@@ -1,5 +1,7 @@
 import pybullet as p
 import time
+import creature
+import genome
 
 
 # the same method in cw_envt.py
@@ -123,6 +125,68 @@ class Simulation:
                time.sleep(1.0/240)
             # print(pos[2])
             # print(cr.get_distance_travelled())
+
+    def run_creature_from_csv(self, csv_file, env_id=0, environment_config=None, iterations=2400):
+        # Prepare physics engine for simulation
+        if environment_config is None:
+            environment_config = {}
+        physics_client_id = self.physicsClientId
+        p.resetSimulation(physicsClientId=physics_client_id)
+        p.setPhysicsEngineParameter(enableFileCaching=0, physicsClientId=physics_client_id)
+        p.setPhysicsEngineParameter(enableFileCaching=0)
+        p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+
+        # 3D Sandbox Environment setup
+        if env_id == 0:
+            p.setGravity(0, 0, -10, physicsClientId=physics_client_id)
+            plane_shape = p.createCollisionShape(p.GEOM_PLANE, physicsClientId=physics_client_id)
+            floor = p.createMultiBody(plane_shape, plane_shape, physicsClientId=physics_client_id)
+        elif env_id == 1:
+            p.setGravity(0, 0, -10, physicsClientId=physics_client_id)
+            make_arena(arena_size=environment_config["ARENA_SIZE"])
+            p.setAdditionalSearchPath('shapes/')
+            mountain = p.loadURDF("gaussian_pyramid.urdf",
+                                  environment_config["MOUNTAIN_SPAWN_POSITION"],
+                                  environment_config["MOUNTAIN_SPAWN_ORIENTATION_QUATERNION"],
+                                  useFixedBase=1)
+            # print(f"{mountain}, {p.getNumJoints(mountain)}, {p.getContactPoints(mountain)}")
+
+        # generate a random creature
+        cr = creature.Creature(gene_count=5)
+
+        # swap its dna with dna from csv (IMPORTANT)
+        dna = genome.Genome.from_csv(csv_file)
+        cr.update_dna(dna)
+
+        # save it to XML
+        with open('test.urdf', 'w') as f:
+            f.write(cr.to_xml())
+
+        # load it into the sim
+        creature_id = p.loadURDF('test.urdf')  # creature_id
+
+        # Adjust the position and orientation of it
+        p.resetBasePositionAndOrientation(creature_id,
+                                          environment_config["CREATURE_SPAWN_POSITION"],
+                                          environment_config["CREATURE_SPAWN_ORIENTATION_QUATERNION"],
+                                          physicsClientId=physics_client_id)
+
+        # Let the simulation begin
+        for step in range(iterations):
+            p.stepSimulation(physicsClientId=physics_client_id)
+            if step % 24 == 0:
+                self.update_motors(cid=creature_id, cr=cr)
+
+            pos, orn = p.getBasePositionAndOrientation(creature_id, physicsClientId=physics_client_id)
+            cr.update_position(pos)
+            # Slow down sim speed if in gui mode
+            if self.sim_mode == "gui":
+                time.sleep(1.0 / 240)
+            # print(pos[2])
+            # print(cr.get_distance_travelled())
+
+        # Print fitness
+        print(f"Fitness: {cr.get_fitness()}")
 
     def update_motors(self, cid, cr):
         """
