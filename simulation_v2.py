@@ -38,14 +38,20 @@ def make_arena(arena_size=10, wall_height=1):
 
 
 class Simulation:
-    def __init__(self, sim_id=0, physicsClientId=None):
+    def __init__(self, sim_id=0, sim_mode="direct", physicsClientId=None):
         self.physicsClientId = physicsClientId
         self.sim_id = sim_id
+        self.sim_mode = sim_mode
 
     def connect(self):
         if self.physicsClientId is None:
             # p.disconnect()
-            self.physicsClientId = p.connect(p.DIRECT)
+            if self.sim_mode == "direct":
+                self.physicsClientId = p.connect(p.DIRECT)
+            elif self.sim_mode == "gui":
+                self.physicsClientId = p.connect(p.GUI)
+            else:
+                self.physicsClientId = p.connect(p.DIRECT)
 
     def disconnect(self):
         """
@@ -112,7 +118,9 @@ class Simulation:
 
             pos, orn = p.getBasePositionAndOrientation(creature_id, physicsClientId=physics_client_id)
             cr.update_position(pos)
-            # time.sleep(1.0/240)
+            # Slow down sim speed if in gui mode
+            if self.sim_mode == "gui":
+               time.sleep(1.0/240)
             # print(pos[2])
             # print(cr.get_distance_travelled())
 

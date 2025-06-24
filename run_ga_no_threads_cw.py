@@ -35,10 +35,10 @@ EVOLVE_GENERATIONS = 10
 
 
 
-def main(sim_id):
+def main(sim_id, sim_mode):
     pop = population.Population(pop_size=POPULATION_SIZE, gene_count=GENE_COUNT)
     #sim = simulation.ThreadedSim(pool_size=1)
-    sim = simulation_v2.Simulation(sim_id=int(sim_id))
+    sim = simulation_v2.Simulation(sim_id=int(sim_id), sim_mode=sim_mode)
     sim.connect()
 
     max_fit_on_previous_generation = 0
@@ -102,5 +102,5 @@ def main(sim_id):
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) == 2, "Usage: python run_ga_no_threads_cw.py sim_id"
-    main(sys.argv[1])
+    assert len(sys.argv) == 3, "Usage: python run_ga_no_threads_cw.py sim_id"
+    main(sys.argv[1], sys.argv[2])
