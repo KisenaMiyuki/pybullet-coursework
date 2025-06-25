@@ -1,4 +1,4 @@
-import genome 
+import genome
 from xml.dom.minidom import getDOMImplementation
 from enum import Enum
 import numpy as np
@@ -49,6 +49,7 @@ class Creature:
         self.last_position = None
         self.minimum_horizontal_distance_to_peak = None
         self.ascent_history = []
+        self.horizontal_distance_to_peak_history = []
         self.ascent_threshold = 2.5
         self.time_spent_above_ascent_threshold = 0
 
@@ -112,27 +113,30 @@ class Creature:
         else:
             self.last_position = pos
 
-        # Minimum horizontal distance to peak
+        # Horizontal distance to peak
         # location of peak is currently hard-coded
         current_horizontal_distance_to_peak = None if self.last_position is None else np.linalg.norm(self.last_position[:2] - np.array([0,0]))
-        if self.minimum_horizontal_distance_to_peak is None:
-            self.minimum_horizontal_distance_to_peak = current_horizontal_distance_to_peak
-        else:
-            self.minimum_horizontal_distance_to_peak = current_horizontal_distance_to_peak if current_horizontal_distance_to_peak < self.minimum_horizontal_distance_to_peak else self.minimum_horizontal_distance_to_peak
+        # if self.minimum_horizontal_distance_to_peak is None:
+        #     self.minimum_horizontal_distance_to_peak = current_horizontal_distance_to_peak
+        # else:
+        #     self.minimum_horizontal_distance_to_peak = current_horizontal_distance_to_peak if current_horizontal_distance_to_peak < self.minimum_horizontal_distance_to_peak else self.minimum_horizontal_distance_to_peak
 
-        # TODO: Find a way to calculate fitness without negative values, and ignore initial drop section
+
+        # Update Horizontal distance to peak history
+        if current_horizontal_distance_to_peak:
+            self.horizontal_distance_to_peak_history.append(current_horizontal_distance_to_peak)
 
         # Height change
-        height_change = pos[2] - self.last_position[2]
+        # height_change = pos[2] - self.last_position[2]
 
         # Ascent history
-        if height_change >= 0:
-            self.ascent_history.append(height_change)
+        # if height_change >= 0:
+        #     self.ascent_history.append(height_change)
 
         # Time spent above the ascent threshold
         # What is ascent threshold?
-        if current_ascent > self.ascent_threshold:
-            self.time_spent_above_ascent_threshold += 1
+        # if current_ascent > self.ascent_threshold:
+        #     self.time_spent_above_ascent_threshold += 1
 
 
     def get_distance_travelled(self):
@@ -148,20 +152,26 @@ class Creature:
         """
         "The fitness function"
         """
+        # ===== Old =====
         # Component 1: 1 / horizontal distance to peak
         #                               how to locate peak? (0,0) hardcoded
         # Component 2: average height over time (penalizes single jump or brief ascent, rewards stable climb)
         # Component 3: time spent above certain altitude
         # Component 4: energy used
-        one_over_closest_horizontal_distance_to_peak = 1 / self.minimum_horizontal_distance_to_peak  # greater the better
-        average_ascent_over_time = sum(self.ascent_history) / len(self.ascent_history)
+        # ===== New =====
+        # Sum of (one over horizontal distance to peak ^ 2)
+        distance_history_nparray = np.array(self.horizontal_distance_to_peak_history)
+        sum_of_distance_square = np.sum(1 / np.square(distance_history_nparray))  # greater the better
+        # average_ascent_over_time = sum(self.ascent_history) / len(self.ascent_history)
+        fitness = sum_of_distance_square
         if verbose:
             print(f"┏━━━━━ Fitness function called")
-            print(f"┣━ Minimum horizontal distance to peak: {self.minimum_horizontal_distance_to_peak} | one-over~: {one_over_closest_horizontal_distance_to_peak}")
-            print(f"┣━ Average ascent amount over time: {average_ascent_over_time}")
-            print(f"┣━ Time spent above ascent threshold: {self.time_spent_above_ascent_threshold}")
-            print(f"┗━━━━━ Fitness: {one_over_closest_horizontal_distance_to_peak + average_ascent_over_time + self.time_spent_above_ascent_threshold}")
-        return one_over_closest_horizontal_distance_to_peak + average_ascent_over_time + self.time_spent_above_ascent_threshold
+            print(f"┣━ Sum of one over distance squared: {sum_of_distance_square}")
+            # print(f"┣━ Minimum horizontal distance to peak: {self.minimum_horizontal_distance_to_peak} | one-over~: {sum_of_distance_square}")
+            # print(f"┣━ Average ascent amount over time: {average_ascent_over_time}")
+            # print(f"┣━ Time spent above ascent threshold: {self.time_spent_above_ascent_threshold}")
+            print(f"┗━━━━━ Fitness: {fitness}")
+        return fitness
 
 
     def update_dna(self, dna):
