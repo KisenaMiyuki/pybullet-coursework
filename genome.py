@@ -259,7 +259,7 @@ class URDFLink:
         self.sibling_ind = 1
 
     def to_link_element(self, adom):
-        #         <link name="base_link">
+        #   <link name="base_link">
         #     <visual>
         #       <geometry>
         #         <cylinder length="0.6" radius="0.25"/>
