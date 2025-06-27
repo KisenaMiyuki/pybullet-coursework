@@ -280,21 +280,19 @@ class URDFLink:
         link_tag.setAttribute("name", self.name)
         vis_tag = adom.createElement("visual")
         geom_tag = adom.createElement("geometry")
-        cyl_tag = adom.createElement("cylinder")
-        cyl_tag.setAttribute("length", str(self.link_length))
-        cyl_tag.setAttribute("radius", str(self.link_radius))
+        box_tag = adom.createElement("box")
+        box_tag.setAttribute("size", f"{self.link_radius*2} {self.link_radius*2} {self.link_length}")
         
-        geom_tag.appendChild(cyl_tag)
+        geom_tag.appendChild(box_tag)
         vis_tag.appendChild(geom_tag)
         
         
         coll_tag = adom.createElement("collision")
         c_geom_tag = adom.createElement("geometry")
-        c_cyl_tag = adom.createElement("cylinder")
-        c_cyl_tag.setAttribute("length", str(self.link_length))
-        c_cyl_tag.setAttribute("radius", str(self.link_radius))
+        c_box_tag = adom.createElement("box")
+        c_box_tag.setAttribute("size", f"{self.link_radius*2} {self.link_radius*2} {self.link_length}")
         
-        c_geom_tag.appendChild(c_cyl_tag)
+        c_geom_tag.appendChild(c_box_tag)
         coll_tag.appendChild(c_geom_tag)
         
         #     <inertial>
@@ -303,8 +301,8 @@ class URDFLink:
         #     </inertial>
         inertial_tag = adom.createElement("inertial")
         mass_tag = adom.createElement("mass")
-        # pi r^2 * height
-        mass = np.pi * (self.link_radius * self.link_radius) * self.link_length
+        # width * height * depth for box
+        mass = (self.link_radius * 2) * (self.link_radius * 2) * self.link_length
         mass_tag.setAttribute("value", str(mass))
         inertia_tag = adom.createElement("inertia")
         # <inertia ixx="0.0003" iyy="0.0003" izz="0.0003" ixy="0" ixz="0" iyz="0"/>
